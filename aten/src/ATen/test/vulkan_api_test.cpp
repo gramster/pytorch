@@ -261,241 +261,333 @@ TEST(VulkanAPITest, add) {
 //   ASSERT_TRUE(check);
 // }
 
-// // TEST(VulkanAPITest, conv2d) {
-// //   if (!at::is_vulkan_available()) {
-// //     return;
-// //   }
+TEST(VulkanAPITest, conv2d) {
+  if (!at::is_vulkan_available()) {
+    return;
+  }
 
-// //   constexpr int64_t groups = 1;
-// //   constexpr std::array<int64_t, 2u> stride{1, 2};
-// //   constexpr std::array<int64_t, 2u> padding{3, 0};
-// //   constexpr std::array<int64_t, 2u> dilation{1, 3};
+  constexpr int64_t groups = 1;
+  constexpr std::array<int64_t, 2u> stride{1, 1};
+  constexpr std::array<int64_t, 2u> padding{1, 0};
+  constexpr std::array<int64_t, 2u> dilation{2, 1};
 
-// //   constexpr struct {
-// //     uint32_t batches;
-// //     uint32_t channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t batches;
+    uint32_t channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         batches,
-// //         channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } input {1, 37, 223, 227};
+    std::array<int64_t, 4u> size() const {
+      return {
+        batches,
+        channels,
+        width,
+        height,
+      };
+    }
+  } input {1, 7, 7, 7};
 
-// //   constexpr struct {
-// //     uint32_t output_channels;
-// //     uint32_t input_channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t output_channels;
+    uint32_t input_channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         output_channels,
-// //         input_channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } weights {83, input.channels, 13, 2};
+    std::array<int64_t, 4u> size() const {
+      return {
+        output_channels,
+        input_channels,
+        width,
+        height,
+      };
+    }
+  } weights {8, input.channels, 2, 2};
 
-// //   const auto input_cpu = at::randn(input.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto weights_cpu = at::randn(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto bias_cpu = at::randn({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
+  const auto input_cpu = at::randn(input.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto weights_cpu = at::randn(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto bias_cpu = at::randn({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
 
-// //   const auto output_cpu = at::conv2d(
-// //       input_cpu,
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_cpu = at::conv2d(
+      input_cpu,
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const auto output_vulkan = at::conv2d(
-// //       input_cpu.vulkan(),
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_vulkan = at::conv2d(
+      input_cpu.vulkan(),
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const bool check = almostEqual(output_cpu, output_vulkan.cpu());
-// //   if (!check) {
-// //     std::cout << "Expected:\n" << output_cpu << std::endl;
-// //     std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
-// //   }
+  const bool check = almostEqual(output_cpu, output_vulkan.cpu());
+  if (!check) {
+    std::cout << "Expected:\n" << output_cpu << std::endl;
+    std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
+  }
 
-// //   ASSERT_TRUE(check);
-// // }
+  ASSERT_TRUE(check);
+}
 
-// // TEST(VulkanAPITest, conv2d_dw) {
-// //   if (!at::is_vulkan_available()) {
-// //     return;
-// //   }
+TEST(VulkanAPITest, conv2d_dw) {
+  if (!at::is_vulkan_available()) {
+    return;
+  }
 
-// //   constexpr int64_t groups = 7;
-// //   constexpr std::array<int64_t, 2u> stride{2, 3};
-// //   constexpr std::array<int64_t, 2u> padding{0, 4};
-// //   constexpr std::array<int64_t, 2u> dilation{3, 1};
+  constexpr int64_t groups = 7;
+  constexpr std::array<int64_t, 2u> stride{2, 3};
+  constexpr std::array<int64_t, 2u> padding{0, 4};
+  constexpr std::array<int64_t, 2u> dilation{3, 1};
 
-// //   constexpr struct {
-// //     uint32_t batches;
-// //     uint32_t channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t batches;
+    uint32_t channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         batches,
-// //         channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } input {1, groups, 137, 199};
+    std::array<int64_t, 4u> size() const {
+      return {
+        batches,
+        channels,
+        width,
+        height,
+      };
+    }
+  } input {1, groups, 137, 199};
 
-// //   constexpr struct {
-// //     uint32_t output_channels;
-// //     uint32_t input_channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t output_channels;
+    uint32_t input_channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         output_channels,
-// //         input_channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } weights {groups, 1, 17, 7};
+    std::array<int64_t, 4u> size() const {
+      return {
+        output_channels,
+        input_channels,
+        width,
+        height,
+      };
+    }
+  } weights {groups, 1, 17, 7};
 
-// //   const auto input_cpu = at::rand(input.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto weights_cpu = at::rand(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto bias_cpu = at::rand({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
+  const auto input_cpu = at::rand(input.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto weights_cpu = at::rand(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto bias_cpu = at::rand({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
 
-// //   const auto output_cpu = at::conv2d(
-// //       input_cpu,
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_cpu = at::conv2d(
+      input_cpu,
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const auto output_vulkan = at::conv2d(
-// //       input_cpu.vulkan(),
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_vulkan = at::conv2d(
+      input_cpu.vulkan(),
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const bool check = almostEqual(output_cpu, output_vulkan.cpu());
-// //   if (!check) {
-// //     std::cout << "Expected:\n" << output_cpu << std::endl;
-// //     std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
-// //   }
+  const bool check = almostEqual(output_cpu, output_vulkan.cpu());
+  if (!check) {
+    std::cout << "Expected:\n" << output_cpu << std::endl;
+    std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
+  }
 
-// //   ASSERT_TRUE(check);
-// // }
+  ASSERT_TRUE(check);
+}
 
-// // TEST(VulkanAPITest, conv2d_pw) {
-// //   if (!at::is_vulkan_available()) {
-// //     return;
-// //   }
+TEST(VulkanAPITest, conv2d_pw) {
+  if (!at::is_vulkan_available()) {
+    return;
+  }
 
-// //   constexpr int64_t groups = 1;
-// //   constexpr std::array<int64_t, 2u> stride{1, 1};
-// //   constexpr std::array<int64_t, 2u> padding{0, 0};
-// //   constexpr std::array<int64_t, 2u> dilation{1, 1};
+  constexpr int64_t groups = 1;
+  constexpr std::array<int64_t, 2u> stride{1, 1};
+  constexpr std::array<int64_t, 2u> padding{0, 0};
+  constexpr std::array<int64_t, 2u> dilation{1, 1};
 
-// //   constexpr struct {
-// //     uint32_t batches;
-// //     uint32_t channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t batches;
+    uint32_t channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         batches,
-// //         channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } input {1, 17, 127, 397};
+    std::array<int64_t, 4u> size() const {
+      return {
+        batches,
+        channels,
+        width,
+        height,
+      };
+    }
+  } input {1, 17, 3, 3};
 
-// //   constexpr struct {
-// //     uint32_t output_channels;
-// //     uint32_t input_channels;
-// //     uint32_t width;
-// //     uint32_t height;
+  constexpr struct {
+    uint32_t output_channels;
+    uint32_t input_channels;
+    uint32_t width;
+    uint32_t height;
 
-// //     std::array<int64_t, 4u> size() const {
-// //       return {
-// //         output_channels,
-// //         input_channels,
-// //         width,
-// //         height,
-// //       };
-// //     }
-// //   } weights {29, input.channels, 1, 1};
+    std::array<int64_t, 4u> size() const {
+      return {
+        output_channels,
+        input_channels,
+        width,
+        height,
+      };
+    }
+  } weights {29, input.channels, 1, 1};
 
-// //   const auto input_cpu = at::randn(input.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto weights_cpu = at::randn(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
-// //   const auto bias_cpu = at::randn({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
+  const auto input_cpu = at::randn(input.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto weights_cpu = at::randn(weights.size(), at::device(at::kCPU).dtype(at::kFloat));
+  const auto bias_cpu = at::randn({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
 
-// //   const auto output_cpu = at::conv2d(
-// //       input_cpu,
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_cpu = at::conv2d(
+      input_cpu,
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const auto output_vulkan = at::conv2d(
-// //       input_cpu.vulkan(),
-// //       weights_cpu,
-// //       bias_cpu,
-// //       stride,
-// //       padding,
-// //       dilation,
-// //       groups);
+  const auto output_vulkan = at::conv2d(
+      input_cpu.vulkan(),
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
 
-// //   const bool check = almostEqual(output_cpu, output_vulkan.cpu());
-// //   if (!check) {
-// //     std::cout << "Expected:\n" << output_cpu << std::endl;
-// //     std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
-// //   }
+  const bool check = almostEqual(output_cpu, output_vulkan.cpu());
+  if (!check) {
+    std::cout << "Expected:\n" << output_cpu << std::endl;
+    std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
+  }
 
-// //   ASSERT_TRUE(check);
-// // }
+  ASSERT_TRUE(check);
+}
 
-// TEST(VulkanAPITest, copy) {
-//   if (!at::is_vulkan_available()) {
-//     return;
-//   }
+TEST(VulkanAPITest, conv2d_fixed) {
+  if (!at::is_vulkan_available()) {
+    return;
+  }
 
-//   const auto cpu = at::rand({13, 17, 37, 19}, at::device(at::kCPU).dtype(at::kFloat));
-//   const auto vulkan = cpu.vulkan();
+  constexpr int64_t groups = 1;
+  constexpr std::array<int64_t, 2u> stride{1, 1};
+  constexpr std::array<int64_t, 2u> padding{0, 0};
+  constexpr std::array<int64_t, 2u> dilation{1, 1};
 
-//   const auto check = exactlyEqual(cpu, vulkan.cpu());
-//   if (!check) {
-//     std::cout << "Expected:\n" << cpu << std::endl;
-//     std::cout << "Got:\n" << vulkan.cpu() << std::endl;
-//   }
+  constexpr struct {
+    uint32_t batches;
+    uint32_t channels;
+    uint32_t width;
+    uint32_t height;
 
-//   ASSERT_TRUE(check);
-// }
+    std::array<int64_t, 4u> size() const {
+      return {
+        batches,
+        channels,
+        width,
+        height,
+      };
+    }
+  } input {1, 3, 3, 3};
+
+  constexpr struct {
+    uint32_t output_channels;
+    uint32_t input_channels;
+    uint32_t width;
+    uint32_t height;
+
+    std::array<int64_t, 4u> size() const {
+      return {
+        output_channels,
+        input_channels,
+        width,
+        height,
+      };
+    }
+  } weights {2, input.channels, 2, 2};
+
+  std::vector<float> inputVec{
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    11, 12, 13, 14, 15, 16, 17, 18, 19,
+    101, 102, 103, 104, 105, 106, 107, 108, 109};
+  const auto input_cpu = at::from_blob(
+      inputVec.data(),
+      {1, 3, 3, 3},
+      at::device(at::kCPU).dtype(at::kFloat));
+
+  std::vector<float> wVec{
+    1, 2, 3, 4,
+    11, 12, 13, 14,
+    21, 22, 23, 24,
+    -1, -2, -3, -4,
+    -11, -12, -13, -14,
+    -21, -22, -23, -24};
+  const auto weights_cpu = at::from_blob(
+      wVec.data(),
+      {2, 3, 2, 2},
+      at::device(at::kCPU).dtype(at::kFloat));
+
+  const auto bias_cpu = at::zeros({weights.output_channels}, at::device(at::kCPU).dtype(at::kFloat));
+
+  const auto output_cpu = at::conv2d(
+      input_cpu,
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
+
+  const auto output_vulkan = at::conv2d(
+      input_cpu.vulkan(),
+      weights_cpu,
+      bias_cpu,
+      stride,
+      padding,
+      dilation,
+      groups);
+
+  const bool check = almostEqual(output_cpu, output_vulkan.cpu());
+  if (!check) {
+    std::cout << "Expected:\n" << output_cpu << std::endl;
+    std::cout << "Got:\n" << output_vulkan.cpu() << std::endl;
+  }
+
+  ASSERT_TRUE(check);
+}
+
+TEST(VulkanAPITest, copy) {
+  if (!at::is_vulkan_available()) {
+    return;
+  }
+
+  const auto cpu = at::rand({13, 17, 37, 19}, at::device(at::kCPU).dtype(at::kFloat));
+  const auto vulkan = cpu.vulkan();
+
+  const auto check = exactlyEqual(cpu, vulkan.cpu());
+  if (!check) {
+    std::cout << "Expected:\n" << cpu << std::endl;
+    std::cout << "Got:\n" << vulkan.cpu() << std::endl;
+  }
+
+  ASSERT_TRUE(check);
+}
 
 // TEST(VulkanAPITest, empty) {
 //   if (!at::is_vulkan_available()) {
